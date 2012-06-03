@@ -10,7 +10,7 @@ For lulz, it also saves a gzipped, JSON serialized version of the database to th
 
 -----
 
-SDF is a somewhat terrible format - it dates back to the 1970s and is very domain-specific to physical chemistry and computational chemistry. 
+SDF is a somewhat terrible format - it dates back to the 1970s and is very domain-specific to physical and computational chemistry. 
 
 The ramifications of this is that there's a ton of useful information tied up in this archaic format, and, unless you're willing to break out [OpenBabel](http://openbabel.org) and figure out the right configuration settings, you don't get to play with the shiny info.
 
