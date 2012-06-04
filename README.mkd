@@ -4,19 +4,16 @@
 
 "Chemical Entities of Biological Interest (ChEBI) is a freely available dictionary of molecular entities focused on ‘small’ chemical compounds." 
 
-PyChEBI is a bit of Python glue to massage the *terrible* SDF file format into a Pythonic datastructure. 
+PyChEBI is a Python script to convert the quasi-obsolete SDF file format into a sane (Pythonic) datastructure. 
 
-For lulz, it also saves a gzipped, JSON serialized version of the database to the local machine.
+The script ChEBI_JSON_Builder.py will get the gzip'ed SDF file from the EBI FTP site, parse it into a list of Python dictionaries, and serialize that list as a compressed JSON file.
 
------
+The script JSON_Mongo_Builder.py will open the compressed JSON file and save it to a [MongoDB](http://www.mongodb.org/) collection. It assumes that the Mongo daemon is running on the localhost, but can be easily adapted to work with a third party service like [MongoLab](https://mongolab.com/).
 
-SDF is a somewhat terrible format - it dates back to the 1970s and is very domain-specific to physical and computational chemistry. 
-
-The ramifications of this is that there's a ton of useful information tied up in this archaic format, and, unless you're willing to break out [OpenBabel](http://openbabel.org) and figure out the right configuration settings, you don't get to play with the shiny info.
+To add perspective, I've included two demo scripts, 'demoJSON.py' and 'demoMongo.py' which execute similar queries on the ChEBI data - the unoptimized Python search takes a few dozen times as long as the MongoDB request.
 
 -----
 
-PyChEBI uses only Python 2.7 builtin modules. To generate a serialized JSON database, simply execute "PyChEBI.py" and wait. And then wait awhile longer.
+SDF is a somewhat terrible format - it's a pseudo-heirarchical key-value mapping with objects separated by a the "$$$$" string. Originally designed to distribute [Molfile](http://en.wikipedia.org/wiki/Molfile) connection table information, EBI made use of associated data functionality to distribute a large amount of incredibly useful molecular metadata in addition to the standard table. 
 
-Alternatively, you can make use of the included file. It'll probably save you some mental anguish.
-
+The only parser I could find for the SDF format was part of the overcomplicated [OpenBabel](http://openbabel.org) project. I wanted to play with the information contained in the ChEBI database, but didn't want to deal with an absurdly complex program to get at it. An hour or four and a bit of Python later and I had a beautiful, albiet large, 22k element list of dictionarys. 
