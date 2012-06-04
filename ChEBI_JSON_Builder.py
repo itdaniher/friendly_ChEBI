@@ -51,7 +51,7 @@ def typeChemical(d):
 				d[key] = float(d[key][0])
 	return d
 # normalize types
-sdfFullText = [typeChemical(d) for d in sdfFullText]
+sdfFullText = [typeChemical(d) for d in sdfFullText][0:-1]
 
 # write a gzip'ed JSON dump of the shiny and well-formatted ChEBI database to file
 gzip.open("ChEBI_complete.json.gz", 'w').write(json.dumps(sdfFullText, indent=1))
