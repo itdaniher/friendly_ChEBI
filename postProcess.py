@@ -3,6 +3,7 @@ from pprint import pprint
 import json
 import gzip
 import ast
+import re
 
 compounds = json.loads(gzip.open('ChEBI_complete.json.gz').read())
 
@@ -27,10 +28,11 @@ def addImplicitHydrogens(molecule):
 def addInfo(compound):
 	""" process raw json element to chemjson and add molecular geometry """
 	def normalizeMolfile(molfile):
-		if molfile[0:4].count('\n') > 1:
-			return normalizeMolfile(molfile[1::])
-		if molfile[0:4].count('\n') < 1:
+		count = [bool(re.search("^ *[0-9]+ *[0-9]+ .*", item)) for item in molfile.splitlines()].index(True)
+		if count < 3:
 			return normalizeMolfile('\n'+molfile)
+		if count > 3:
+			return normalizeMolfile(molfile[1::])
 		else:
 			return molfile
 	compound = lowerKeys(compound)
@@ -41,8 +43,8 @@ def addInfo(compound):
 	moleculeFile.setFormat("cjson")
 	if 'charge' not in compound.keys() or compound['charge'] == 0: 
 		addImplicitHydrogens(moleculeFile.molecule())
-	chemkit.CoordinatePredictor.predictCoordinates(moleculeFile.molecule())
-	chemkit.MoleculeGeometryOptimizer.optimizeCoordinates(moleculeFile.molecule())
+#	chemkit.CoordinatePredictor.predictCoordinates(moleculeFile.molecule())
+#	chemkit.MoleculeGeometryOptimizer.optimizeCoordinates(moleculeFile.molecule())
 	results = ast.literal_eval(moleculeFile.writeString())
 	if 'name' in results.keys():
 		del results['name']
@@ -52,5 +54,8 @@ def addInfo(compound):
 		del compound['formulae']
 	return compound
 
-compounds = [addInfo(compound) for compound in compounds[0:1]]
-print compounds
+i = 1
+for compound in compounds[i::]:
+	print i
+	addInfo(compound)
+	i += 1
