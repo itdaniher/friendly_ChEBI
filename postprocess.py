@@ -2,7 +2,7 @@ import chemkit
 from pprint import pprint
 import json
 import gzip
-import traceback
+import ast
 
 compounds = json.loads(gzip.open('ChEBI_complete.json.gz').read())
 
@@ -22,22 +22,31 @@ def addImplicitHydrogens(molecule):
 			molecule.addBond(atom, hydrogen)
 
 def addInfo(compound):
-	try:
-		f = chemkit.MoleculeFile()
-		f.setFormat("sdf")
-		molfile = compound["Molfile"][1::]
-		f.readString(molfile)
-		f.setFormat("cjson")
-		if 'Charge' not in compound.keys() or compound['Charge'] == 0: 
-			addImplicitHydrogens(f.molecule())
-		#chemkit.CoordinatePredictor.predictCoordinates(f.molecule())
-		#chemkit.MoleculeGeometryOptimizer.optimizeCoordinates(f.molecule())
-		compound.update(json.loads(f.writeString()))
-		del compound['Molfile']
-		del compound['Formulae']
-		compound = lower_keys(compound)
-		return compound
-	except Exception:
-		traceback.print_exc()
-		print compound
+	def normalizeMolfile(molfile):
+		if molfile[0:4].count('\n') > 1:
+			return normalizeMolfile(molfile[1::])
+		if molfile[0:4].count('\n') < 1:
+			return normalizeMolfile('\n'+molfile)
+		else:
+			return molfile
+	compound = lower_keys(compound)
+	f = chemkit.MoleculeFile()
+	f.setFormat("sdf")
+	molfile = normalizeMolfile(compound["molfile"])
+	f.readString(molfile)
+	f.setFormat("cjson")
+	if 'charge' not in compound.keys() or compound['charge'] == 0: 
+		addImplicitHydrogens(f.molecule())
+	chemkit.CoordinatePredictor.predictCoordinates(f.molecule())
+	chemkit.MoleculeGeometryOptimizer.optimizeCoordinates(f.molecule())
+	results = f.writeString()
+	results = ast.literal_eval(results)
+	if 'name' in results.keys():
+		del results['name']
+	compound.update(results)
+	del compound['molfile']
+	if 'formulae' in compound.keys():
+		del compound['formulae']
+	return compound
+
 compounds = [addInfo(compound) for compound in compounds]
