@@ -30,16 +30,16 @@ def addInfo(compound):
 		else:
 			return molfile
 	compound = lower_keys(compound)
-	f = chemkit.MoleculeFile()
-	f.setFormat("sdf")
+	moleculeFile = chemkit.MoleculeFile()
+	moleculeFile.setFormat("sdf")
 	molfile = normalizeMolfile(compound["molfile"])
-	f.readString(molfile)
-	f.setFormat("cjson")
+	moleculeFile.readString(molfile)
+	moleculeFile.setFormat("cjson")
 	if 'charge' not in compound.keys() or compound['charge'] == 0: 
-		addImplicitHydrogens(f.molecule())
-	chemkit.CoordinatePredictor.predictCoordinates(f.molecule())
-	chemkit.MoleculeGeometryOptimizer.optimizeCoordinates(f.molecule())
-	results = ast.literal_eval(f.writeString())
+		addImplicitHydrogens(moleculeFile.molecule())
+	chemkit.CoordinatePredictor.predictCoordinates(moleculeFile.molecule())
+	chemkit.MoleculeGeometryOptimizer.optimizeCoordinates(moleculeFile.molecule())
+	results = ast.literal_eval(moleculeFile.writeString())
 	if 'name' in results.keys():
 		del results['name']
 	compound.update(results)
@@ -48,4 +48,5 @@ def addInfo(compound):
 		del compound['formulae']
 	return compound
 
-compounds = [addInfo(compound) for compound in compounds]
+compounds = [addInfo(compound) for compound in compounds[0:1]]
+print compounds
