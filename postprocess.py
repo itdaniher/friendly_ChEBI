@@ -39,8 +39,7 @@ def addInfo(compound):
 		addImplicitHydrogens(f.molecule())
 	chemkit.CoordinatePredictor.predictCoordinates(f.molecule())
 	chemkit.MoleculeGeometryOptimizer.optimizeCoordinates(f.molecule())
-	results = f.writeString()
-	results = ast.literal_eval(results)
+	results = ast.literal_eval(f.writeString())
 	if 'name' in results.keys():
 		del results['name']
 	compound.update(results)
