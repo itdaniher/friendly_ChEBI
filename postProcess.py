@@ -6,15 +6,18 @@ import ast
 
 compounds = json.loads(gzip.open('ChEBI_complete.json.gz').read())
 
-def lower_keys(x):
+def lowerKeys(x):
+	""" convert all keys in the provided dictionary to lowercase """
 	if isinstance(x, list):
-		return [lower_keys(v) for v in x]
+		return [lowerKeys(v) for v in x]
 	if isinstance(x, dict):
-		return dict((k.lower(), lower_keys(v)) for k, v in x.iteritems())
+		return dict((k.lower(), lowerKeys(v)) for k, v in x.iteritems())
 	return x
 
 
 def addImplicitHydrogens(molecule):
+	""" iterate through atoms in the molecule and add hydrogens 
+	to atoms not matching their expected valence """
 	atoms = molecule.atoms()
 	for atom in atoms:
 		while atom.valence() < atom.element().expectedValence():
@@ -22,6 +25,7 @@ def addImplicitHydrogens(molecule):
 			molecule.addBond(atom, hydrogen)
 
 def addInfo(compound):
+	""" process raw json element to chemjson and add molecular geometry """
 	def normalizeMolfile(molfile):
 		if molfile[0:4].count('\n') > 1:
 			return normalizeMolfile(molfile[1::])
@@ -29,7 +33,7 @@ def addInfo(compound):
 			return normalizeMolfile('\n'+molfile)
 		else:
 			return molfile
-	compound = lower_keys(compound)
+	compound = lowerKeys(compound)
 	moleculeFile = chemkit.MoleculeFile()
 	moleculeFile.setFormat("sdf")
 	molfile = normalizeMolfile(compound["molfile"])
