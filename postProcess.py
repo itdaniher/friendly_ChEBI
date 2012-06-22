@@ -1,10 +1,8 @@
-import time
 import chemkit
 import json
 import gzip
 import re
 
-compounds = json.loads(open('ChEBI_complete.json').read())
 
 def lowerKeys(x):
 	""" convert all keys in the provided dictionary to lowercase """
@@ -61,7 +59,10 @@ def addInfo(compound):
 		del compound['formulae']
 	return compound
 
-start = time.time()
-compounds = [addInfo(compound) for compound in compounds[0:-1]]
-print time.time() - start
-print compounds[0]
+if __name__ == "__main__":
+	compounds = json.loads(gzip.open('ChEBI_complete.json.gz').read())
+	import time
+	start = time.time()
+	compounds = [addInfo(compound) for compound in compounds]
+	print time.time() - start
+	print compounds[0]
