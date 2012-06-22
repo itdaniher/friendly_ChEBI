@@ -1,11 +1,10 @@
+import time
 import chemkit
-from pprint import pprint
 import json
 import gzip
-import ast
 import re
 
-compounds = json.loads(gzip.open('ChEBI_complete.json.gz').read())
+compounds = json.loads(open('ChEBI_complete.json').read())
 
 def lowerKeys(x):
 	""" convert all keys in the provided dictionary to lowercase """
@@ -28,13 +27,21 @@ def addImplicitHydrogens(molecule):
 def addInfo(compound):
 	""" process raw json element to chemjson and add molecular geometry """
 	def normalizeMolfile(molfile):
-		count = [bool(re.search("^ *[0-9]+ *[0-9]+ .*", item)) for item in molfile.splitlines()].index(True)
+		if type(molfile) in [str, unicode]:
+			molfile = molfile.splitlines()
+		count = [bool(re.search("^ *[0-9]+ *[0-9]+ .*", item)) for item in molfile].index(True)
 		if count < 3:
-			return normalizeMolfile('\n'+molfile)
-		if count > 3:
-			return normalizeMolfile(molfile[1::])
+			molfile.insert(0, '')
+			return normalizeMolfile(molfile)
+		elif count > 3:
+			molfile.pop(0)
+			return normalizeMolfile(molfile)
 		else:
-			return molfile
+			molfile[0] = ''
+			molfile[1] = ''
+			molfile[2] = ''
+			return '\n'.join(molfile)
+			
 	compound = lowerKeys(compound)
 	moleculeFile = chemkit.MoleculeFile()
 	moleculeFile.setFormat("sdf")
@@ -45,7 +52,7 @@ def addInfo(compound):
 		addImplicitHydrogens(moleculeFile.molecule())
 #	chemkit.CoordinatePredictor.predictCoordinates(moleculeFile.molecule())
 #	chemkit.MoleculeGeometryOptimizer.optimizeCoordinates(moleculeFile.molecule())
-	results = ast.literal_eval(moleculeFile.writeString())
+	results = json.loads(moleculeFile.writeString())
 	if 'name' in results.keys():
 		del results['name']
 	compound.update(results)
@@ -54,8 +61,7 @@ def addInfo(compound):
 		del compound['formulae']
 	return compound
 
-i = 1
-for compound in compounds[i::]:
-	print i
-	addInfo(compound)
-	i += 1
+start = time.time()
+compounds = [addInfo(compound) for compound in compounds[0:-1]]
+print time.time() - start
+print compounds[0]
