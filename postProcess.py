@@ -24,6 +24,7 @@ def addImplicitHydrogens(molecule):
 
 def addInfo(compound):
 	""" process raw json element to chemjson and add molecular geometry """
+	chunk = lambda l, x: [l[i:i+x] for i in xrange(0, len(l), x)]
 	def normalizeMolfile(molfile):
 		if type(molfile) in [str, unicode]:
 			molfile = molfile.splitlines()
