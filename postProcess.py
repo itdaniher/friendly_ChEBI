@@ -35,9 +35,7 @@ def addInfo(compound):
 			molfile.pop(0)
 			return normalizeMolfile(molfile)
 		else:
-			molfile[0] = ''
-			molfile[1] = ''
-			molfile[2] = ''
+			molfile[0:3] = ['']*3
 			return '\n'.join(molfile)
 			
 	compound = lowerKeys(compound)
