@@ -1,3 +1,4 @@
+import time
 import chemkit
 import json
 import gzip
@@ -47,21 +48,20 @@ def addInfo(compound):
 	moleculeFile.setFormat("cjson")
 	if 'charge' not in compound.keys() or compound['charge'] == 0: 
 		addImplicitHydrogens(moleculeFile.molecule())
-#	chemkit.CoordinatePredictor.predictCoordinates(moleculeFile.molecule())
-#	chemkit.MoleculeGeometryOptimizer.optimizeCoordinates(moleculeFile.molecule())
+	start = time.time()
+	chemkit.CoordinatePredictor.predictCoordinates(moleculeFile.molecule())
+	chemkit.MoleculeGeometryOptimizer.optimizeCoordinates(moleculeFile.molecule())
 	results = json.loads(moleculeFile.writeString())
+	duration = time.time()-start
 	if 'name' in results.keys():
 		del results['name']
 	compound.update(results)
 	del compound['molfile']
 	if 'formulae' in compound.keys():
 		del compound['formulae']
+	print round(duration, 4), compound['chebi name']
 	return compound
 
 if __name__ == "__main__":
 	compounds = json.loads(gzip.open('ChEBI_complete.json.gz').read())
-	import time
-	start = time.time()
-	compounds = [addInfo(compound) for compound in compounds]
-	print time.time() - start
-	print compounds[0]
+	compounds = [addInfo(compound) for compound in compounds[0:100]]
