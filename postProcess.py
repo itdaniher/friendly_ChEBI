@@ -3,7 +3,7 @@ import chemkit
 import json
 import gzip
 import re
-
+import random
 
 def lowerKeys(x):
 	""" convert all keys in the provided dictionary to lowercase """
@@ -19,8 +19,10 @@ def addImplicitHydrogens(molecule):
 	to atoms not matching their expected valence """
 	atoms = molecule.atoms()
 	for atom in atoms:
+		position = atom.neighbors()[0].position()
 		while atom.valence() < atom.element().expectedValence():
 			hydrogen = molecule.addAtom("H")
+			hydrogen.setPosition(position.x()+random.random(), position.y()+random.random(), position.z()+random.random())
 			molecule.addBond(atom, hydrogen)
 
 def addInfo(compound):
@@ -48,8 +50,9 @@ def addInfo(compound):
 	moleculeFile.setFormat("cjson")
 	if 'charge' not in compound.keys() or compound['charge'] == 0: 
 		addImplicitHydrogens(moleculeFile.molecule())
+	results = json.loads(moleculeFile.writeString())
+	print "starting", compound['chebi name'], '~', sum(results['atoms']['elements'])*2
 	start = time.time()
-	chemkit.CoordinatePredictor.predictCoordinates(moleculeFile.molecule())
 	chemkit.MoleculeGeometryOptimizer.optimizeCoordinates(moleculeFile.molecule())
 	results = json.loads(moleculeFile.writeString())
 	duration = time.time()-start
@@ -59,9 +62,9 @@ def addInfo(compound):
 	del compound['molfile']
 	if 'formulae' in compound.keys():
 		del compound['formulae']
-	print round(duration, 4), compound['chebi name']
+	print '\t', round(duration, 4)
 	return compound
 
 if __name__ == "__main__":
 	compounds = json.loads(gzip.open('ChEBI_complete.json.gz').read())
-	compounds = [addInfo(compound) for compound in compounds[0:100]]
+	compounds = [addInfo(compound) for compound in compounds[0:5]]
