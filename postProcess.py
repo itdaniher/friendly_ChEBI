@@ -19,11 +19,12 @@ def addImplicitHydrogens(molecule):
 	""" iterate through atoms in the molecule and add hydrogens to atoms not matching their expected valence """
 	atoms = molecule.atoms()
 	for atom in atoms:
-		position = atom.neighbors()[0].position()
-		while atom.valence() < atom.element().expectedValence():
-			hydrogen = molecule.addAtom("H")
-			hydrogen.setPosition(position.x()+random.random(), position.y()+random.random(), position.z()+random.random())
-			molecule.addBond(atom, hydrogen)
+		if atom.neighbors():
+			position = atom.neighbors()[0].position()
+			while atom.valence() < atom.element().expectedValence():
+				hydrogen = molecule.addAtom("H")
+				hydrogen.setPosition(position.x()+random.random(), position.y()+random.random(), position.z()+random.random())
+				molecule.addBond(atom, hydrogen)
 
 def normalizeMolfile(molfile):
 	if type(molfile) in [str, unicode]:
@@ -53,9 +54,9 @@ def addInfo(compound):
 	molfile = normalizeMolfile(compound["molfile"])
 	moleculeFile.readString(molfile)
 	moleculeFile.setFormat("cjson")
+	print "starting", compound['chebi name'], '~', sum(json.loads(moleculeFile.writeString())['atoms']['elements'])*2
 	if 'charge' not in compound.keys() or compound['charge'] == 0: 
 		addImplicitHydrogens(moleculeFile.molecule())
-	print "starting", compound['chebi name'], '~', sum(json.loads(moleculeFile.writeString())['atoms']['elements'])*2
 	start = time.time()
 	chemkit.CoordinatePredictor.eliminateCloseContacts(moleculeFile.molecule())
 	chemkit.MoleculeGeometryOptimizer.optimizeCoordinates(moleculeFile.molecule())
@@ -64,7 +65,9 @@ def addInfo(compound):
 	del compound['molfile']
 	if 'formulae' in compound.keys():
 		del compound['formulae']
-	open("compounds/"+compound['chebi name']+".json", "w").write(json.dumps(compound))
+#	moleculeFile.setFormat("cml")
+#	moleculeFile.write("compounds/"+compound["chebi name"]+".cml")
+	open("compounds/"+compound["chebi name"]+".json", "w").write(json.dumps(compound))
 	return compound
 
 if __name__ == "__main__":
