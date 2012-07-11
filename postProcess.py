@@ -27,7 +27,7 @@ def addImplicitHydrogens(molecule):
 				molecule.addBond(atom, hydrogen)
 
 def normalizeMolfile(molfile):
-	if type(molfile) in [str, unicode]:
+	if isinstance(molfile, (str, unicode)):
 		molfile = molfile.splitlines()
 	count = [bool(re.search("^ *[0-9]+ *[0-9]+ .*", item)) for item in molfile].index(True)
 	if count < 3:
@@ -40,8 +40,6 @@ def normalizeMolfile(molfile):
 		molfile[0:3] = ['']*3
 		return '\n'.join(molfile)
 
-chunk = lambda l, x: [l[i:i+x] for i in xrange(0, len(l), x)]
-		
 
 def addInfo(compound):
 	""" process raw json element to chemjson and add molecular geometry """
