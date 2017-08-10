@@ -9,9 +9,9 @@ import io
 
 # get ChEBI database from the European Bioinformatics Institute 
 
-#sdfFullText = gzip.open("./ChEBI_complete.sdf.gz").read()
-virtualsdfgz = io.BytesIO(urllib.urlopen("ftp://ftp.ebi.ac.uk/pub/databases/chebi/SDF/ChEBI_complete.sdf.gz").read())
-sdfFullText = gzip.GzipFile(fileobj=virtualsdfgz, mode="rb").read()
+sdfFullText = gzip.open("./ChEBI_complete.sdf.gz").read()
+#virtualsdfgz = io.BytesIO(urllib.urlopen("ftp://ftp.ebi.ac.uk/pub/databases/chebi/SDF/ChEBI_complete.sdf.gz").read())
+#sdfFullText = gzip.GzipFile(fileobj=virtualsdfgz, mode="rb").read()
 
 ## start parsing SDF
 
@@ -54,4 +54,4 @@ def typeChemical(d):
 sdfFullText = [typeChemical(d) for d in sdfFullText][0:-1]
 
 # write a gzip'ed JSON dump of the shiny and well-formatted ChEBI database to file
-gzip.open("ChEBI_complete.json.gz", 'w').write(json.dumps(sdfFullText, indent=1))
+gzip.open("ChEBI_complete.json.gz", 'w').write('\n'.join([json.dumps(x) for x in sdfFullText]))#, indent=1))
