@@ -4,11 +4,11 @@ Usage:
 
 Options:
     --max_count COUNT   Maximum number of results to return. [default: 10]
-    --postfix_glob G    Use provided keyword as start of query. Appends G. [default: *]
     --sort_by NAME      Sort results by this field name. Can be charge/formula/mass/name/InChI/SMILES [default: mass]
-    --index PATH        Specify path to the index made by ChEBI_Indexer.py. [default: index]
+    --postfix_glob G    Use provided keyword as start of query. Appends G. [default: *]
     --prefix_glob G     Preface keyword with G for glob searching.
     --no_glob           Disables globbing.
+    --index PATH        Specify path to the index made by ChEBI_Indexer.py. [default: index]
 """
 from docopt import docopt as magic_docopt
 

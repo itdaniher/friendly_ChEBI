@@ -1,19 +1,64 @@
-### PyChEBI
+### Friendly-ChEBI
 
------
+#### Introduction
 
 "Chemical Entities of Biological Interest (ChEBI) is a freely available dictionary of molecular entities focused on ‘small’ chemical compounds." 
 
-PyChEBI is a Python script to convert the quasi-obsolete SDF file format into a sane (Pythonic) datastructure. 
+`friendly_ChEBI` is a project to make this archive of organic compounds trivially usable for both interactive lookups and programmatic (API) access with the
+intent of facilitating new applications and reference resources.
 
-The script ChEBI_JSON_Builder.py will get the gzip'ed SDF file from the EBI FTP site, parse it into a list of Python dictionaries, and serialize that list as a compressed JSON file.
+The main purpose of this project is to serve as a chemical reference, allowing the end user to quickly check molecular mass and chemical structure from a
+command line environment. The [whoosh](https://whoosh.readthedocs.io) project is used for ChEBI indexing and search. The
+[docopt-ng](https://github.com/bazaar-projects/docopt-ng) project is used for the command line interface and documentation.
 
-The script JSON_Mongo_Builder.py will open the compressed JSON file and save it to a [MongoDB](http://www.mongodb.org/) collection. It assumes that the Mongo daemon is running on the localhost, but can be easily adapted to work with a third party service like [MongoLab](https://mongolab.com/).
 
-To add perspective, I've included two demo scripts, 'demoJSON.py' and 'demoMongo.py' which execute similar queries on the ChEBI data - the unoptimized Python search takes a few dozen times as long as the MongoDB request.
+#### Usage:
 
------
+To get you started fast, a recent copy of ChEBI is contained in this repo. 
+To use it, you'll need to install dependencies and build an index.
+
+> sudo apt install python3-pip
+> sudo pip3 install pipenv
+> pipenv install .
+> pipenv run build_index
+> pipenv search [options] (KEYWORDS...)
+
+
+```
+Usage:
+    search.py [options] (KEYWORDS...)
+
+Options:
+    --max_count COUNT   Maximum number of results to return. [default: 10]
+    --sort_by NAME      Sort results by this field name. Can be charge/formula/mass/name/InChI/SMILES [default: mass]
+    --postfix_glob G    Use provided keyword as start of query. Appends G. [default: *]
+    --prefix_glob G     Preface keyword with G for glob searching.
+    --no_glob           Disables globbing.
+    --index PATH        Specify path to the index made by ChEBI_Indexer.py. [default: index]
+```
+
+#### Examples
+
+```
+ $ pipenv run search methylene blue
+<Top 1 Results for And([Term('name', 'methylene'), Term('name', 'blue')]) runtime=0.006587166999906913>
+<Hit {'ChEBI': 6872, 'InChI': 'InChI=1S/C16H18N3S.ClH/c1-18(2)11-5-7-13-15(9-11)20-16-10-12(19(3)4)6-8-14(16)17-13;/h5-10H,1-4H3;1H/q+1;/p-1', 'SMILES': '[Cl-].CN(C)c1ccc2nc3ccc(cc3[s+]c2c1)N(C)C', 'charge': 0, 'formula': 'C16H18N3S.Cl', 'mass': 319.852, 'name': 'methylene blue'}>
+```
+
+```
+ $ pipenv run search --prefix_glob '*' --max_count 5 tryptamine
+<Top 5 Results for Wildcard('name', '*tryptamine*') runtime=1.302685406999899>
+<Hit {'ChEBI': 16765, 'InChI': 'InChI=1S/C10H12N2/c11-6-5-8-7-12-10-4-2-1-3-9(8)10/h1-4,7,12H,5-6,11H2', 'SMILES': 'NCCc1c[nH]c2ccccc12', 'charge': 0, 'formula': 'C10H12N2', 'mass': 160.2157, 'name': 'tryptamine'}>
+<Hit {'ChEBI': 28136, 'InChI': 'InChI=1S/C11H14N2/c1-12-7-6-9-8-13-11-5-3-2-4-10(9)11/h2-5,8,12-13H,6-7H2,1H3', 'SMILES': 'CNCCc1c[nH]c2ccccc12', 'charge': 0, 'formula': 'C11H14N2', 'mass': 174.2423, 'name': 'n-methyltryptamine'}>
+<Hit {'ChEBI': 59020, 'InChI': 'InChI=1S/C11H14N2/c1-8(12)6-9-7-13-11-5-3-2-4-10(9)11/h2-5,7-8,13H,6,12H2,1H3', 'SMILES': 'CC(N)Cc1c[nH]c2ccccc12', 'charge': 0, 'formula': 'C11H14N2', 'mass': 174.2423, 'name': 'alpha-methyltryptamine'}>
+<Hit {'ChEBI': 139217, 'InChI': 'InChI=1S/C10H12N2O/c11-5-4-7-6-12-8-2-1-3-9(13)10(7)8/h1-3,6,12-13H,4-5,11H2', 'SMILES': 'C=1C=2NC=C(C2C(=CC1)O)CCN', 'charge': 0, 'formula': 'C10H12N2O', 'mass': 176.215, 'name': '4-hydroxytryptamine'}>
+<Hit {'ChEBI': 80959, 'InChI': 'InChI=1S/C10H12N2O/c13-12-6-5-8-7-11-10-4-2-1-3-9(8)10/h1-4,7,11-13H,5-6H2', 'SMILES': 'ONCCc1c[nH]c2ccccc12', 'charge': 0, 'formula': 'C10H12N2O', 'mass': 176.2151, 'name': 'n-hydroxyl-tryptamine'}>
+```
+
+#### An aside on SDF
 
 SDF is a somewhat terrible format - it's a pseudo-heirarchical key-value mapping with objects separated by a the "$$$$" string. Originally designed to distribute [Molfile](http://en.wikipedia.org/wiki/Molfile) connection table information, EBI made use of associated data functionality to distribute a large amount of incredibly useful molecular metadata in addition to the standard table. 
 
 The only parser I could find for the SDF format was part of the overcomplicated [OpenBabel](http://openbabel.org) project. I wanted to play with the information contained in the ChEBI database, but didn't want to deal with an absurdly complex program to get at it. An hour or four and a bit of Python later and I had a beautiful, albiet large, 22k element list of dictionaries. 
+
+
