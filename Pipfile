@@ -15,6 +15,5 @@ python_version = "3.6"
 [scripts]
 get_latest_sdf = "wget ftp://ftp.ebi.ac.uk/pub/databases/chebi/SDF/ChEBI_complete.sdf.gz"
 build_json = "python ChEBI_JSON_Builder.py"
-build_collection = "python ChEBI_Splitter.py"
 build_index = "python ChEBI_Indexer.py"
 search = "python search.py"
