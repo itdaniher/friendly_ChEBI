@@ -13,13 +13,14 @@ Options:
     --index PATH        Specify path to the index made by ChEBI_Indexer.py. [default: index]
     --field_help        Returns available fieldnames for searching and sorting.
 """
-from docopt import docopt as magic_docopt
 
 import sys
 import os
 
 from whoosh.fields import TEXT
 from whoosh.qparser import QueryParser, FuzzyTermPlugin
+
+from docopt import magic_docopt
 
 magic_docopt()
 
