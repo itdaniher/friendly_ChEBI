@@ -1,8 +1,9 @@
 __doc__ = f"""
 Usage:
-    {__file__} [JSON_LINE_GZ] [options]
+    {__file__} [options]
 
 Options:
+    --input_file CHEBIJSON  Input JSON object. (compressed or not) [default: ChEBI_complete.json]
     --split_count COUNT     Number of lines per output file. [default: 5000]
     --output_dir DIR        Output directory to place JSON line files in. [default: chebi_split]
 """
@@ -11,22 +12,29 @@ import sys
 import mmap
 import json
 import os.path
-from docopt import docopt as magic_docopt
+from docopt import magic
+import glob
 
-magic_docopt()
+magic()
 os.makedirs(arguments.output_dir, mode=0o755, exist_ok=True)
-if not arguments.JSON_LINE_GZ:
-    arguments["JSON_LINE_GZ"] = "ChEBI_complete.json.gz"
-with open(arguments.JSON_LINE_GZ, "r+") as f:
+
+if not os.path.exists(arguments.input_file):
+    arguments["input_file"] = glob.glob("ChEBI_complete.json*")[0]
+
+print(f"splitting: {arguments.input_file}")
+with open(arguments.input_file, "rb") as f:
     mapped = mmap.mmap(f.fileno(), 0, prot=mmap.PROT_READ)
-    gzfile = gzip.GzipFile(mode="r", fileobj=mapped)
+    if arguments.input_file.endswith('.gz'):
+        input_file = gzip.GzipFile(mode="r", fileobj=mapped)
+    else:
+        input_file = mapped
     i = 0
     f = None
     split_count = int(arguments.split_count or 5000)
     split_index = 0
     break_count = 0
     while True:
-        line = gzfile.readline()
+        line = input_file.readline()
         if line.strip():
             chebi_id, json_text = line.decode("utf-8").strip().split("\t")
             if int(chebi_id) > split_index:

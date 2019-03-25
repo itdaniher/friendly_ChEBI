@@ -1,60 +1,64 @@
-#!/usr/bin/python
-# Ian Daniher - 2012.06.01
-# Beerware
+"""
+Usage:
+    {__file__} [options]
 
+Options:
+    --input F    Input SDF file from EBI. [default: ChEBI_complete.sdf.gz]
+    --output F   Output JSON file. [default: ChEBI_complete.json]
+"""
+import mmap
 import gzip
 import json
 import urllib
 import io
 
-# get ChEBI database from the European Bioinformatics Institute
+from docopt import magic
 
-sdfFullText = gzip.open("./ChEBI_complete.sdf.gz").read().decode()
-# virtualsdfgz = io.BytesIO(urllib.urlopen("ftp://ftp.ebi.ac.uk/pub/databases/chebi/SDF/ChEBI_complete.sdf.gz").read())
-# sdfFullText = gzip.GzipFile(fileobj=virtualsdfgz, mode="rb").read()
+magic()
+
 
 ## start parsing SDF
 
-# split string by "$$$$", the SD file segmenter
-sdfFullText = sdfFullText.split("$$$$")
-
-# normalize Molfile data to match formatting for the rest of the file
-sdfFullText = ["\n> <Molfile>\n" + item for item in sdfFullText]
-
-# subsegment by looking for "\n> <tag>"
-sdfFullText = [item.split("\n> <") for item in sdfFullText]
-
-# clean up subsegments
-stripNewlines = lambda inList: [item.strip("\n") for item in inList]
-sdfFullText = map(stripNewlines, sdfFullText)
-
-# split subsegments into key-value pairs
-listToTuples = lambda inList: [string.split(">\n") for string in inList]
-sdfFullText = map(listToTuples, sdfFullText)
-
-# trim off first (garbage/empty) object
-sdfFullText = [item[1:-1] for item in sdfFullText]
-
-# split the values into lists by newline
-tupleSplitter = lambda inList: dict([(item[0], item[1].split("\n")) if item[0] != "Molfile" else item for item in inList])
-sdfFullText = map(tupleSplitter, sdfFullText)
-
-# define a resliant type normalizer for the chemical key-value groups
 def typeChemical(d):
-    for key in d:
-        if len(d[key]) == 1:
-            if key in ["ChEBI ID", "ChEBI Name", "InChI", "InChIKey", "Formulae", "Definition", "SMILES", "Secondary ChEBI ID", "IUPAC Names"]:
-                d[key] = d[key][0]
+    for key, value in d.items():
+        if len(value) == 1:
+            if key == "ChEBI ID":
+                d[key] = int(value[0].split(":")[-1])
             elif key in ["Charge", "Star"]:
-                d[key] = int(d[key][0])
-            elif key in ["Mass"]:
-                d[key] = float(d[key][0])
+                d[key] = int(value[0])
+            elif key in ["Mass", "Monoisotopic Mass"]:
+                d[key] = float(value[0])
+            elif key in ["ChEBI Name", "Definition"]:
+                d[key] = value[0]
     if len(d):
-        return int(d["ChEBI ID"].split(":")[-1]), dict(sorted(d.items()))
+        return (d["ChEBI ID"], dict(sorted(d.items())))
 
+entries = []
+out_file = open(arguments.output, "w")
+with open(arguments.input, "r") as f:
+     mapped = mmap.mmap(f.fileno(), 0, prot=mmap.PROT_READ)
+     gzfile = gzip.GzipFile(mode="r", fileobj=mapped)
+     done = False
+     while True:
+        segments = []
+        line = b""
+        while line.strip() != b"$$$$":
+            line = gzfile.readline()
+            if line == b"":
+                done = True
+                break
+            segments.append(line)
+        segment = b''.join(segments).decode()
+        rebuilt = "\n> <Molfile>\n" + segment
+        subsegments = [subseg for subseg in rebuilt.split("\n> <")]
+        info = [subseg.split(">\n") for subseg in subsegments][1:-1]
+        chem = {i[0]:([x for x in i[1].split('\n') if x] if i[0] != "Molfile" else i[1]) for i in info}
+        entry = typeChemical(chem)
+        if entry:
+            entries.append(entry)
+        if done:
+            break
 
-# normalize types
-sdfFullText = [typeChemical(d) for d in sdfFullText]
-
-# write a gzip'ed JSON dump of the shiny and well-formatted ChEBI database to file
-gzip.open("ChEBI_complete.json.gz", "w").write(("\n".join([f"{i}\t{json.dumps(x)}" for (i, x) in sorted([x for x in sdfFullText if x])])).encode())
+for entry in sorted(entries):
+    print(entry)
+    out_file.write(f"{entry[0]}\t{json.dumps(entry[1])}\n")
