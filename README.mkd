@@ -29,17 +29,22 @@ pipenv search [options] (KEYWORDS...)
 
 ##### Searching:
 
+For convenience, `search.py` can be invoked as `pipenv run search`.
+
 ```
 Usage:
+    search.py --field_help
     search.py [options] (KEYWORDS...)
 
 Options:
+    --search FIELD      Column to search. [default: names]
     --max_count COUNT   Maximum number of results to return. [default: 10]
-    --sort_by NAME      Sort results by this field name. Can be charge/formula/mass/name/InChI/SMILES [default: mass]
+    --sort_by FIELD     Sort results by this field name. [default: mass]
     --postfix_glob G    Use provided keyword as start of query. Appends G. [default: *]
     --prefix_glob G     Preface keyword with G for glob searching.
     --no_glob           Disables globbing.
     --index PATH        Specify path to the index made by ChEBI_Indexer.py. [default: index]
+    --field_help        Returns available fieldnames for searching and sorting.
 ```
 
 #### Examples
