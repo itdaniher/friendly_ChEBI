@@ -17,12 +17,17 @@ command line environment. The [whoosh](https://whoosh.readthedocs.io) project is
 To get you started fast, a recent copy of ChEBI is contained in this repo. 
 To use it, you'll need to install dependencies and build an index.
 
-> sudo apt install python3-pip
-> sudo pip3 install pipenv
-> pipenv install .
-> pipenv run build_index
-> pipenv search [options] (KEYWORDS...)
+##### Setup:
 
+``` bash
+sudo apt install python3-pip
+sudo pip3 install pipenv
+pipenv install .
+pipenv run build_index
+pipenv search [options] (KEYWORDS...)
+```
+
+##### Searching:
 
 ```
 Usage:
