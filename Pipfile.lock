@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "2e7b9321d4553b2593c0729103ccfe216ab63e055d2e88be4b0552f10c9cb623"
+            "sha256": "7b699b82d23d1994fa9e749e57d97ea36736e00cc00316567373a60e23370b22"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -18,11 +18,11 @@
     "default": {
         "docopt-ng": {
             "hashes": [
-                "sha256:6e1eeee578656c2853821d2fd3ca09e230dbe941dda34bf0987b0806c8f49a2a",
-                "sha256:bb3a3982db054c3e275e69cd8917e9cecfab4ba8fceb0b3802a7f112dc5e23f9"
+                "sha256:86ceea032f0cfa59e60776eb0cf38ac73653581022872320f47dc874678d7244",
+                "sha256:e98145cc02220ac5b1a8ee1c40ca9cc0cbd8e480a1b4928872bde686dc48660b"
             ],
             "index": "pypi",
-            "version": "==0.7.1"
+            "version": "==0.7.2"
         },
         "whoosh": {
             "hashes": [
